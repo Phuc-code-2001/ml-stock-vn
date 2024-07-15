@@ -77,7 +77,7 @@ def render_transaction_today(symbol):
         shark_buy_price = shark_buy_value / (shark_buy_volume + 1e-9)
         shark_sell_price = shark_sell_value / (shark_sell_volume + 1e-9)
 
-        shark_diff_price = shark_diff_value / shark_diff_volume
+        shark_diff_price = shark_diff_value / (shark_diff_volume + 1e-9)
 
         shark_summary = pd.DataFrame({
             "Loại": ["M", "B", "M-B"],
@@ -105,7 +105,7 @@ def render_transaction_today(symbol):
         wolf_buy_price = wolf_buy_value / (wolf_buy_volume + 1e-9)
         wolf_sell_price = wolf_sell_value / (wolf_sell_volume + 1e-9)
 
-        wolf_diff_price = wolf_diff_value / wolf_diff_volume
+        wolf_diff_price = wolf_diff_value / (wolf_diff_volume + 1e-9)
 
         wolf_summary = pd.DataFrame({
             "Loại": ["M", "B", "M-B"],
@@ -136,7 +136,7 @@ def render_transaction_today(symbol):
         fox_buy_price = fox_buy_value / (fox_buy_volume + 1e-9)
         fox_sell_price = fox_sell_value / (fox_sell_volume + 1e-9)
 
-        fox_diff_price = fox_diff_value / fox_diff_volume
+        fox_diff_price = fox_diff_value / (fox_diff_volume + 1e-9)
 
         fox_summary = pd.DataFrame({
             "Loại": ["M", "B", "M-B"],
@@ -165,7 +165,7 @@ def render_transaction_today(symbol):
         sheep_buy_price = sheep_buy_value / (sheep_buy_volume + 1e-9)
         sheep_sell_price = sheep_sell_value / (sheep_sell_volume + 1e-9)
 
-        sheep_diff_price = sheep_diff_value / sheep_diff_volume
+        sheep_diff_price = sheep_diff_value / (sheep_diff_volume + 1e-9)
 
         sheep_summary = pd.DataFrame({
             "Loại": ["M", "B", "M-B"],
