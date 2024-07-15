@@ -19,6 +19,7 @@ with sidebar:
 
 symbol = render_select_company()
 if symbol:
+    st.button("Reload", on_click=st.experimental_rerun, key="Reload")
     render_transaction_today(symbol)
 else:
     st.write("Chọn mã cổ phiếu để xem thông tin giao dịch")

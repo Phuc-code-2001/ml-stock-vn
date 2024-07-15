@@ -17,4 +17,5 @@ def get_transaction_today(symbol):
     df = vnstock.quote.intraday(symbol=symbol, page_size=10000)
     df["value"] = df["price"] * df["volume"]
     df["investor"] = df["value"].apply(get_investor_type)
+    df.loc[df["match_type"] == "ATO/ATC", ["investor"]] = "ATO/ATC"
     return df[["time", "match_type", "investor", "price", "volume", "value"]]
