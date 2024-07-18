@@ -2,16 +2,17 @@ import streamlit as st
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
-from utils.transactions import get_transaction_today
+from utils.transactions import get_transaction_today, get_transaction_on_date
 from utils.enumtypes import InvestorType
 from utils.formaters import hightlight_type, hightlight_investor
 
 from collections import defaultdict
 
-def render_transaction_today(symbol):
+def render_transaction_today(symbol, selected_date=None):
 
-    trading_df = get_transaction_today(symbol)
+    trading_df = get_transaction_today(symbol) if selected_date is None else get_transaction_on_date(symbol, selected_date)
 
     buy_df = trading_df[trading_df["match_type"] == "Buy"]
     sell_df = trading_df[trading_df["match_type"] == "Sell"]
@@ -30,6 +31,7 @@ def render_transaction_today(symbol):
     st.write(f"Tổng cộng: {len(trading_df):,} giao dịch")
     st.write(f"Tổng khối lượng: {int(total_volume):,} đơn vị")
     st.write(f"Tổng giá trị: {total_value:,} VND")
+    st.write(f"Giá trung bình: {total_value / total_volume:,.0f} VND")
     # put a horizontal line
     st.write('---')
 
@@ -52,7 +54,7 @@ def render_transaction_today(symbol):
         
     # put a horizontal line
     st.write("---")
-    trading_df.time = pd.to_datetime(trading_df.time, format='%H:%M:%S')
+    trading_df.time = pd.to_datetime(trading_df.time, format='mixed')
 
     rows = st.columns(2)
     # SHARK
@@ -264,3 +266,13 @@ def render_transaction_today(symbol):
     rows = st.columns(6)
     rows[0].write("Số dòng: " + str(len(filterd_df)))
     st.table(styled_df)
+
+def render_select_symbol_history_day(symbol, widget=st):
+
+    from configs import INTRA_DATA_FOLDER
+    
+    saved_symbols = os.listdir(INTRA_DATA_FOLDER)
+    if symbol not in saved_symbols: return None
+    data_files = os.listdir(os.path.join(INTRA_DATA_FOLDER, symbol))
+    labels = [f.split(".")[0] for f in data_files]
+    return widget.selectbox("Chọn dữ liệu quá khứ:", labels, index=None)

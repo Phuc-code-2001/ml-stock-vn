@@ -3,7 +3,7 @@ from licenses import accept_licence
 accept_licence()
 
 from components.listings import render_select_company
-from components.transactions import render_transaction_today
+from components.transactions import render_transaction_today, render_select_symbol_history_day
 
 
 sidebar = st.sidebar
@@ -19,7 +19,8 @@ with sidebar:
 
 symbol = render_select_company()
 if symbol:
-    st.button("Reload", on_click=st.rerun, key="Reload")
-    render_transaction_today(symbol)
+    selected_date = render_select_symbol_history_day(symbol)
+    if st.button("Reload", key="Reload"): st.rerun()
+    render_transaction_today(symbol, selected_date)
 else:
     st.write("Chọn mã cổ phiếu để xem thông tin giao dịch")
