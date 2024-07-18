@@ -257,7 +257,7 @@ def render_transaction_today(symbol, selected_date=None):
     filterd_df["time"] = filterd_df["time"].map(lambda x: x.strftime('%H:%M:%S'))
 
     # make unique datetime index
-    filterd_df = filterd_df[::-1].reset_index(drop=True)
+    filterd_df = filterd_df[::-1].reset_index(drop=True).head(1000)
     styled_df = filterd_df.style.apply(hightlight_type, subset=['match_type']) \
                                 .apply(hightlight_investor, subset=['investor']) \
                                 .format(precision=0, thousands=".", decimal=",") \
