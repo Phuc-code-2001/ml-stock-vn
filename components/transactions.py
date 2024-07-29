@@ -13,6 +13,10 @@ from collections import defaultdict
 def render_transaction_today(symbol, selected_date=None):
 
     trading_df = get_transaction_today(symbol) if selected_date is None else get_transaction_on_date(symbol, selected_date)
+    if selected_date is None:
+        selected_date = dt.datetime.today().strftime('%d/%m/%Y')
+    else:
+        selected_date = dt.datetime.strptime(selected_date, "%Y-%m-%d").strftime('%d/%m/%Y')
 
     buy_df = trading_df[trading_df["match_type"] == "Buy"]
     sell_df = trading_df[trading_df["match_type"] == "Sell"]
@@ -27,7 +31,7 @@ def render_transaction_today(symbol, selected_date=None):
     total_volume = buy_volume + sell_volume
     total_value = buy_value + sell_value
 
-    st.write(f"Thống kê giao dịch của mã {symbol} ngày {dt.datetime.today().strftime('%d/%m/%Y')}")
+    st.write(f"Thống kê giao dịch của mã {symbol} ngày {selected_date}")
     st.write(f"Tổng cộng: {len(trading_df):,} giao dịch")
     st.write(f"Tổng khối lượng: {int(total_volume):,} đơn vị")
     st.write(f"Tổng giá trị: {total_value:,} VND")
