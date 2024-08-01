@@ -4,11 +4,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-from utils.transactions import get_transaction_today, get_transaction_on_date
+from utils.transactions import get_transaction_today, get_transaction_on_date, save_transactions
 from utils.enumtypes import InvestorType
 from utils.formaters import hightlight_type, hightlight_investor
 
 from collections import defaultdict
+
+from configs import UPDATE_DATA_PASSWORD
 
 def render_transaction_today(symbol, selected_date=None):
 
@@ -280,3 +282,13 @@ def render_select_symbol_history_day(symbol, widget=st):
     data_files = os.listdir(os.path.join(INTRA_DATA_FOLDER, symbol))
     labels = [f.split(".")[0] for f in data_files]
     return widget.selectbox("Chọn dữ liệu quá khứ:", labels, index=None)
+
+def render_save_transactions(widget=st):
+    password = widget.text_input("Nhập mật khẩu", type="password", key="Password")
+    if widget.button("Xác nhận", key="Save") and password == UPDATE_DATA_PASSWORD:
+        progress = widget.progress(0)
+        save_transactions(
+            on_step_callback=lambda i, symbol: progress.progress(i + 1, text=f"Đang lưu mã {symbol}"),
+            on_complete_callback=lambda: progress.empty() and widget.success("Đã lưu dữ liệu giao dịch hôm nay", icon="✅")
+        )
+    
