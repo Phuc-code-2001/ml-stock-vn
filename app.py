@@ -5,6 +5,7 @@ accept_licence()
 
 from components.listings import render_select_company
 from components.transactions import render_transaction_today, render_select_symbol_history_day, render_save_transactions
+from components.timing import render_time
 
 sidebar = st.sidebar
 sidebar.write("## Thông tin")
@@ -16,7 +17,9 @@ sidebar.write("Chọn nhà đầu tư để xem thông tin giao dịch của h�
 sidebar.write("## Liên hệ")
 sidebar.write("Liên hệ với tác giả qua email: itphuc892@gmail.com")
 
-if dt.datetime.now().hour > 15:
+gmt_vn_time = dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(hours=7)
+# render_time(lambda: dt.datetime.now(tz=dt.timezone.utc) + dt.timedelta(hours=7), widget=sidebar)
+if gmt_vn_time.hour > 15:
     expanded = sidebar.expander("Cập nhật dữ liệu")
     render_save_transactions(expanded)
 
