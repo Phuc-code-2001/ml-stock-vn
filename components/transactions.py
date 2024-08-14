@@ -4,9 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-from utils.transactions import get_transaction_today, get_transaction_on_date, save_transactions
+from utils.transactions import get_transaction_today, get_transaction_on_date
 from utils.enumtypes import InvestorType
-from utils.formaters import hightlight_type, hightlight_investor
 
 from collections import defaultdict
 
@@ -64,7 +63,7 @@ def render_transaction_today(symbol, selected_date=None):
 
     rows = st.columns(2)
     # SHARK
-    rows[0].write("Thống kê nhà đầu tư cá mập (> 1 tỷ)")
+    rows[0].write("Thống kê nhà đầu tư cá mập (> 5 tỷ)")
     shark_df = trading_df[trading_df["investor"] == InvestorType.SHARK.value]
 
     shark_buy = shark_df[shark_df["match_type"] == "Buy"]
@@ -110,7 +109,7 @@ def render_transaction_today(symbol, selected_date=None):
         rows[0].pyplot(fig)
 
     # WOLF
-    rows[1].write("Thống kê nhà đầu tư sói (> 500 triệu)")
+    rows[1].write("Thống kê nhà đầu tư sói (> 1 tỷ)")
     wolf_df = trading_df[trading_df["investor"] == InvestorType.WOLF.value]
 
     wolf_buy = wolf_df[wolf_df["match_type"] == "Buy"]
@@ -263,32 +262,10 @@ def render_transaction_today(symbol, selected_date=None):
     filterd_df["time"] = filterd_df["time"].map(lambda x: x.strftime('%H:%M:%S'))
 
     # make unique datetime index
-    filterd_df = filterd_df[::-1].reset_index(drop=True).head(1000)
-    styled_df = filterd_df.style.apply(hightlight_type, subset=['match_type']) \
-                                .apply(hightlight_investor, subset=['investor']) \
-                                .format(precision=0, thousands=".", decimal=",") \
-    
+    filterd_df = filterd_df[::-1].reset_index(drop=True)
     
     rows = st.columns(6)
     rows[0].write("Số dòng: " + str(len(filterd_df)))
-    st.table(styled_df)
-
-def render_select_symbol_history_day(symbol, widget=st):
-
-    from configs import INTRA_DATA_FOLDER
-    
-    saved_symbols = os.listdir(INTRA_DATA_FOLDER)
-    if symbol not in saved_symbols: return None
-    data_files = os.listdir(os.path.join(INTRA_DATA_FOLDER, symbol))
-    labels = [f.split(".")[0] for f in data_files]
-    return widget.selectbox("Chọn dữ liệu quá khứ:", labels, index=None)
-
-def render_save_transactions(widget=st):
-    password = widget.text_input("Nhập mật khẩu", type="password", key="Password")
-    if widget.button("Xác nhận", key="Save") and password == UPDATE_DATA_PASSWORD:
-        progress = widget.progress(0)
-        save_transactions(
-            on_step_callback=lambda i, symbol: progress.progress(i + 1, text=f"Đang lưu mã {symbol}"),
-            on_complete_callback=lambda: progress.empty() and widget.success("Đã lưu dữ liệu giao dịch hôm nay", icon="✅")
-        )
+    filterd_df.columns = ["Thời gian", "Loại giao dịch", "Nhà đầu tư", "Giá", "Khối lượng", "Giá trị"]
+    st.dataframe(filterd_df, width=1000, hide_index=True)
     
