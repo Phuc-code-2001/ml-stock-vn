@@ -15,9 +15,12 @@ def get_investor_type(x):
     
     return InvestorType.SHEEP.value
 
-def get_transaction_today(symbol):
+def get_infraday_data(symbol, page_size=20000):
     vnstock = Vnstock(source="VCI").stock(symbol=symbol)
-    df = vnstock.quote.intraday(symbol=symbol, page_size=15000)
+    return vnstock.quote.intraday(symbol=symbol, page_size=page_size)
+
+def get_transaction_today(symbol):
+    df = get_infraday_data(symbol)
     df["value"] = df["price"] * df["volume"]
     df["investor"] = df["value"].apply(get_investor_type)
     df.loc[df["match_type"] == "ATO/ATC", ["investor"]] = "ATO/ATC"

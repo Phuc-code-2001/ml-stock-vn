@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 from licenses import accept_licence
 accept_licence()
 
-from databases.functions import get_daily_transactions, get_interested_symbols
+from databases.functions import get_daily_transactions, get_interested_symbols, update_and_save_recent_transactions
 from components.sidebar import render_sidebar
+
+from utils.timing import get_recent_trading_day, get_current_datetime
+from databases.managers import manager_dict, ProgressManager
 
 render_sidebar(st)
 
@@ -17,6 +20,23 @@ if selected_symbol:
     transactions = get_daily_transactions(selected_symbol, selected_date)
     if not transactions:
         st.write(f"Không có thông tin giao dịch cho {selected_symbol} ngày {selected_date}")
+        recent_trading_date = get_recent_trading_day()
+        print("recent_trading_date:", recent_trading_date)
+        now_datetime = get_current_datetime()
+        print("now_datetime:", now_datetime)
+        if recent_trading_date.date() == selected_date and (now_datetime.hour <= 5 or now_datetime.hour >= 15 or now_datetime.weekday() in [5, 6]):
+            if st.button(f"Cập nhật dữ liệu {recent_trading_date.date()}", key="update"):
+                progress_bar = st.progress(0, text="Đang cập nhật dữ liệu...")
+                progress_manager = manager_dict.get("progress_manager")
+                if progress_manager is None or progress_manager.is_completed:
+                    on_step_callback = lambda x: progress_bar.progress(x, text=f"Đang cập nhật dữ liệu {x * 100:.2f}%")
+                    on_complete_callback = lambda x: progress_bar.text("Cập nhật dữ liệu thành công!")
+                    progress_manager = ProgressManager(update_and_save_recent_transactions, on_step_callback, on_complete_callback)
+                    manager_dict["progress_manager"] = progress_manager
+                    progress_manager.start()
+                else:
+                    progress_manager.wait_until_complete()
+                
     else:
         df = pd.DataFrame(transactions, columns=["time", "price", "volume", "match_type"])
         df.convert_dtypes()
@@ -59,13 +79,13 @@ if selected_symbol:
         sell_df = df[df["match_type"] == "Sell"]
         buy_df = df[df["match_type"] == "Buy"]
         rows = st.columns(3)
-        sell_group = sell_df.groupby("price").sum()["volume"].map(lambda x: x / 1000).sort_index()
+        sell_group = sell_df[["price", "volume"]].groupby("price").sum()["volume"].map(lambda x: x / 1000).sort_index()
         sell_group.index = sell_group.index / 1000
         fig, ax = plt.subplots(figsize=(4, 8))
         sell_group.plot(kind="barh", ax=ax, color="blue", label="KL Bán (Nghìn)", legend=True, ylabel="", xlabel="")
         rows[0].pyplot(fig)
 
-        buy_group = buy_df.groupby("price").sum()["volume"].map(lambda x: x / 1000).sort_index()
+        buy_group = buy_df[["price", "volume"]].groupby("price").sum()["volume"].map(lambda x: x / 1000).sort_index()
         buy_group.index = buy_group.index / 1000
         fig, ax = plt.subplots(figsize=(4, 8))
         buy_group.plot(kind="barh", ax=ax, color="green", label="KL Mua (Nghìn)", legend=True, ylabel="", xlabel="")
@@ -114,6 +134,6 @@ if selected_symbol:
             filtered_value_df = filtered_type_df[filtered_type_df["value"] >= filtered_value * 1000000]
             df = filtered_value_df
 
-        df["time"] = df["time"].map(lambda x: x.split()[-1])
+        df["time"] = df["time"].map(lambda x: str(x).split()[-1])
         df.columns = ["Thời gian", "Giá", "Khối lượng", "Loại giao dịch", "Giá trị"]
         st.dataframe(df, hide_index=True, width=1000, height=None)
